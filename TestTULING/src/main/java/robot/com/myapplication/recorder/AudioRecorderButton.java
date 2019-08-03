@@ -10,7 +10,6 @@ import android.view.View;
 
 import robot.com.myapplication.R;
 
-
 /**
  * 自定义按钮 实现录音等功能
  * Created by Administrator on 2019/7/26.
@@ -63,15 +62,37 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
      * 录音完成后的回调
      */
     public interface AudioFinishRecorderListener{
-        //时长  和 文件
+        //时长 和 文件
         void onFinish(float seconds, String filePath);
     }
 
+    //结束录音
     private AudioFinishRecorderListener mListener;
 
     public void setAudioFinishRecorderListener (AudioFinishRecorderListener listener){
         mListener = listener;
     }
+
+    private Runnable mGetTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (isRecording) {
+                try {
+                    Thread.sleep( 100 );
+                    mTime += 0.1f;
+//                    Log.i( "Test", "run: mTimeRunnable is "+mTime );
+                    if ((int) mTime >= 24) {
+                        mHandler.sendEmptyMessage( MSG_DIALOG_FORCE );
+                    }
+                    if((int)mTime == 30){
+                        mHandler.sendEmptyMessage( MSG_DIALOG_STOP );
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
 
     //获取音量大小的Runnable
     private Runnable mGetVoiceLevelRunnable = new Runnable() {
@@ -80,7 +101,8 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
             while (isRecording) {
                 try {
                     Thread.sleep(100);
-                    mTime += 0.1f;
+//                    mTime += 0.1f;
+//                    Log.i( "Test", "run: mTime is "+mTime );
                     mHandler.sendEmptyMessage(MSG_VOICE_CHANGED);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -92,7 +114,12 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
     private static final int MSG_AUDIO_PREPARED = 0X110;
     private static final int MSG_VOICE_CHANGED = 0X111;
     private static final int MSG_DIALOG_DISMISS = 0X112;
+    private static final int MSG_DIALOG_FORCE = 0X113;
+    private static final int MSG_DIALOG_STOP = 0X114;
 
+    /**
+     * 多线程
+     */
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -102,6 +129,7 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                     mDialogManager.showRecordingDialog();
                     isRecording = true;
                     new Thread(mGetVoiceLevelRunnable).start();
+                    new Thread( mGetTimeRunnable ).start();
                     break;
                 case MSG_VOICE_CHANGED :
                     mDialogManager.updateVoiceLevel(mAudioManager.getVoiceLevel(7));
@@ -109,15 +137,32 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                 case MSG_DIALOG_DISMISS :
                     mDialogManager.dismissDialog();
                     break;
+                case MSG_DIALOG_FORCE:
+                    mDialogManager.forceSend( mTime );
+                    break;
+                case MSG_DIALOG_STOP:
+                    mDialogManager.dismissDialog();
+                    mAudioManager.release();
+                    if (mListener != null) {
+                        mListener.onFinish( mTime, mAudioManager.getCurrentFilePath() );
+                    }
+                    reset();
+                    break;
             }
         }
     };
 
+    /**
+     * 重写的接口方法
+     */
     @Override
     public void wellPrepared() {
         mHandler.sendEmptyMessage(MSG_AUDIO_PREPARED);
     }
 
+    /**
+     * 触摸事件
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
@@ -156,11 +201,6 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                     if (mListener != null) {
                         mListener.onFinish(mTime,mAudioManager.getCurrentFilePath());
                     }
-                }else if (mCurState == STATE_RECORDING) {
-
-                    mDialogManager.dismissDialog();
-                    //release
-                    //callbacktoAct
                 } else if (mCurState == STATE_WANT_TO_CANCEL) {
                     mDialogManager.dismissDialog();
                     mAudioManager.cancel();
@@ -182,6 +222,9 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
         mTime = 0;
     }
 
+    /**
+     * 取消录音
+     */
     private boolean wantToCancel(int x, int y) {
         //如果左右滑出 button
         if (x < 0 || x > getWidth()) {
@@ -206,7 +249,6 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                 case STATE_RECORDING:
                     setBackgroundResource(R.drawable.btn_recording);
                     setText(R.string.str_recorder_recording);
-
                     if (isRecording) {
                         mDialogManager.recording();
                     }

@@ -15,12 +15,13 @@ public class ListData extends Recorder{
 	private String publishTime;
 	private int infType;
 	private String picPath;
+	private String amrFilePath;
+	private String localPicPath;
 
 	/**
 	 * 初始化
 	 */
-	public ListData(){
-	}
+	public ListData(){}
 
 	/**
 	 * 语音发送
@@ -37,11 +38,13 @@ public class ListData extends Recorder{
 	/**
 	 * 图片发送
 	 */
-	public ListData(String fromWho, String toUser, int flag, String publishTime,int infType, String picPath) {
+	public ListData(String fromWho, String toUser, int flag, String publishTime,int infType) {//, String picPath
 		this.fromWho = fromWho;
 		this.toUser = toUser;
 		this.flag = flag;
 		this.publishTime = publishTime;
+		this.infType = infType;
+//		this.picPath = picPath;
 	}
 
 
@@ -57,6 +60,13 @@ public class ListData extends Recorder{
 		this.infType = infType;
 	}
 
+	public String getLocalPicPath() {
+		return localPicPath;
+	}
+
+	public void setLocalPicPath(String localPicPath) {
+		this.localPicPath = localPicPath;
+	}
 
 	public String getContent() {
 		return text_content;
@@ -112,6 +122,14 @@ public class ListData extends Recorder{
 
 	public void setPicPath(String picPath) {
 		this.picPath = picPath;
+	}
+
+	public String getAmrFilePath() {
+		return amrFilePath;
+	}
+
+	public void setAmrFilePath(String amrFilePath) {
+		this.amrFilePath = amrFilePath;
 	}
 
 	@Override

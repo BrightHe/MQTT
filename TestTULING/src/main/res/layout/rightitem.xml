@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    >
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:orientation="vertical">
     
      <TextView
         android:id="@+id/tv_time"
@@ -33,24 +34,42 @@
         android:background="@drawable/right"
         />
 
-    <ImageView
-        android:id="@+id/tv_img"
-        android:layout_below="@id/tv_time"
-        android:layout_marginTop="15dp"
-        android:layout_marginRight="5dp"
-        android:layout_toLeftOf="@id/iv"
-        android:padding="12dp"
-        android:gravity="center"
+    <!--<ImageView-->
+        <!--android:id="@+id/tv_img"-->
+        <!--android:layout_below="@id/tv_time"-->
+        <!--android:layout_toLeftOf="@id/iv"-->
+        <!--android:gravity="center"-->
+        <!--android:layout_width="100dp"-->
+        <!--android:layout_height="100dp"-->
+        <!--android:visibility="gone"/>-->
+
+    <!--点击之后的涟漪效果:这个涟漪效果在5.0以上版本中才能展示，
+    在低版本上是一个普通的点击变暗的效果.-->
+    <android.support.v7.widget.CardView
+        android:id="@+id/card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"/>
+        android:layout_below="@id/tv_time"
+        android:layout_toLeftOf="@id/iv"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="10dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <ImageView
+            android:id="@+id/tv_img"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:gravity="center"/>
+    </android.support.v7.widget.CardView>
 
     <LinearLayout
         android:id="@+id/id_recorder_length"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/iv"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="25dp"
         android:background="@drawable/right"
         android:orientation="vertical"
         android:visibility="gone"
@@ -70,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/id_recorder_length"
-        android:layout_marginRight="3dp"
+        android:layout_marginRight="1dp"
         android:textColor="#ff777777"
         android:layout_centerVertical="true"
         android:visibility="gone"

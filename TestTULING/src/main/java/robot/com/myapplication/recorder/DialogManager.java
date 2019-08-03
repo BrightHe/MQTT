@@ -77,6 +77,19 @@ public class DialogManager {
         }
     }
 
+    //30秒语音强制发送
+    public void forceSend(float time){
+        if (mDialog != null&&mDialog.isShowing()) {
+            mIcon.setVisibility(View.VISIBLE);
+            mVoice.setVisibility(View.VISIBLE);
+            mLabel.setVisibility(View.VISIBLE);
+
+            mIcon.setImageResource(R.drawable.recorder);
+            mLabel.setText("还可以说   "+(30-(int)(time)-1)+"  秒");
+        }
+    }
+
+
     //关闭dialog
     public void dismissDialog(){
         if (mDialog != null&&mDialog.isShowing()) {
@@ -87,7 +100,6 @@ public class DialogManager {
 
     /**
      * 通过level更新voice上的图片
-     *
      * @param level
      */
     public void updateVoiceLevel(int level){
