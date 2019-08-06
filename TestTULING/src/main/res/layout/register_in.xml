@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/title_thing"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <ImageView
+            android:id="@+id/arrow_back"
+            android:clickable="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/arrow_back"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"/>
+
+        <TextView
+            android:id="@+id/back"
+            android:clickable="true"
+            android:layout_marginLeft="2dp"
+            android:layout_toRightOf="@+id/arrow_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="返回"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20sp"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="注册用户"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp"
+            android:layout_centerInParent="true"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="#fb3c8ade"
+        android:layout_below="@+id/title_thing"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/takePhoto"
+            android:clickable="true"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/users"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/input"
+        android:layout_below="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="160dp">
+
+        <EditText
+            android:id="@+id/user_input"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="bottom"
+            android:hint="请输入用户名"
+            android:textColor="@color/gray"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            />
+
+        <EditText
+            android:id="@+id/password_input"
+            android:layout_below="@+id/user_input"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:password="true"
+            android:gravity="bottom"
+            android:hint="请输入密码"
+            android:textColor="@color/gray"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:inputType="textPassword"
+            />
+
+        <EditText
+            android:id="@+id/password_confirm"
+            android:layout_below="@+id/password_input"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="bottom"
+            android:hint="请确认密码"
+            android:textColor="@color/gray"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:password="true"
+            android:inputType="textPassword"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/but"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/input"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:id="@+id/register"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/shape_blue_frame"
+            android:text="注册"
+            android:textSize="20sp"
+            android:textColor="#fff"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"/>
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -179,9 +179,9 @@ public class PostObj {
         //        Context applicationContext = "application 上下文"; // getApplicationContext()
         String bucket = "pic-001-1259665619"; //对象所在的存储桶                                    存储桶名称
         String cosPath = FileNameUtils.subString( filePath ); //即对象在 COS 上的绝对路径,格式如 cosPath = "text.txt";                 对象键
-        final File file = new File(context.getExternalCacheDir(),"");
+        final File file = new File(context.getExternalCacheDir()+"/receive_audios","");
         final String savedDirPath = file.getPath();                                                                  // 对象下载到本地的文件夹路径
-        Log.i( TAG, "downloadObject: "+savedDirPath );
+//        Log.i( TAG, "downloadObject: "+savedDirPath );
         FileNameUtils.setFileName();
         final String savedFileName = FileNameUtils.getFileName();//若不填（null）,则与 cos 上的对象名一样                            对象下载到本地的文件名
         // 初始化 TransferConfig
@@ -206,7 +206,7 @@ public class PostObj {
                 Log.d(TAG,  "Success: " + cOSXMLDownloadTaskResult.httpMessage);
                 httpMessage = cOSXMLDownloadTaskResult.httpMessage;
                 accessUrl = savedDirPath+"/"+savedFileName;
-                Log.i( TAG, "accessUrl is : "+accessUrl );
+//                Log.i( TAG, "accessUrl is : "+accessUrl );
                 AppStr appStr = (AppStr)context.getApplicationContext();
                 appStr.setIsCompleted( true );
             }

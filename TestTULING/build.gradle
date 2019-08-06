@@ -29,15 +29,14 @@ allprojects {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
     compile files('libs/httpclient-cache-4.2.5.jar')
     compile files('libs/httpclient-4.2.5.jar')
     compile files('libs/gson-2.8.0.jar')
     compile files('libs/org.eclipse.paho.android.service-1.1.1.jar')
     compile files('libs/org.eclipse.paho.client.mqttv3-1.2.0.jar')
-    compile 'com.android.support:appcompat-v7:28.0.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'de.hdodenhof:circleimageview:2.1.0'
-    compile 'com.github.bumptech.glide:glide:3.5.2'
     compile files('libs/bolts-tasks-1.4.0.jar')
     compile files('libs/cos-android-sdk-5.4.26.jar')
     compile files('libs/mid-sdk-4.06.jar')
@@ -45,7 +44,14 @@ dependencies {
     compile files('libs/okhttp-3.9.0.jar')
     compile files('libs/okio-1.13.0.jar')
     compile files('libs/qcloud-foundation-1.5.11.jar')
-    compile 'com.wihaohao:PageGridView:1.2.1'//显示表情列表
-    compile 'com.android.support:cardview-v7:28.0.0'//cardView卡片
+    //显示表情列表
+    //cardView卡片
+    compile 'com.android.support:appcompat-v7:28.0.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
+    compile 'com.github.bumptech.glide:glide:3.5.2'
+    compile 'com.wihaohao:PageGridView:1.2.1'
+    compile 'com.android.support:cardview-v7:28.0.0'
+    compile 'com.longsh:OptionFrame:1.0.0'
     testCompile 'junit:junit:4.12'
 }

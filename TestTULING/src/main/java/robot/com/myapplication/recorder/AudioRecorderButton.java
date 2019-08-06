@@ -1,7 +1,6 @@
 package robot.com.myapplication.recorder;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -22,6 +21,7 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
     private static final int STATE_NORMAL = 1;
     private static final int STATE_RECORDING = 2;
     private static final int STATE_WANT_TO_CANCEL = 3;
+    private static final int STATE_FORCE_SEND = 4;
     //当前状态
     private int mCurState = STATE_NORMAL;
     //已经开始录音
@@ -30,9 +30,12 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
     private DialogManager mDialogManager;
     private AudioManager mAudioManager;
 
+    //记录语音时长
     private float mTime;
     //是否触发onLongClick
     private boolean mReady;
+    private boolean isForced = false;//强制发送
+    private static int count = 0 ;
 
     public AudioRecorderButton(Context context) {
         this(context, null);
@@ -43,7 +46,8 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
         mDialogManager = new DialogManager(getContext());
         //偷个懒，并没有判断 是否存在， 是否可读。
 
-        String dir = Environment.getExternalStorageDirectory() + "/recorder_audios";
+        String dir = context.getExternalCacheDir()+"/recorder_audios";
+//        String dir = Environment.getExternalStorageDirectory() + "/recorder_audios";//根目录下创建目录recorder_audios
 
         mAudioManager = new AudioManager(dir);
         mAudioManager.setOnAudioStateListener(this);
@@ -53,7 +57,7 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
             public boolean onLongClick(View v) {
                 mReady = true;
                 mAudioManager.prepareAudio();
-                return false;
+                return true;
             }
         });
     }
@@ -73,6 +77,9 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
         mListener = listener;
     }
 
+    /**
+     * 记录录音的时长的Runnable
+     */
     private Runnable mGetTimeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -80,8 +87,7 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                 try {
                     Thread.sleep( 100 );
                     mTime += 0.1f;
-//                    Log.i( "Test", "run: mTimeRunnable is "+mTime );
-                    if ((int) mTime >= 24) {
+                    if ( (int) mTime >= 24 && (int)mTime < 30) {
                         mHandler.sendEmptyMessage( MSG_DIALOG_FORCE );
                     }
                     if((int)mTime == 30){
@@ -102,7 +108,6 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                 try {
                     Thread.sleep(100);
 //                    mTime += 0.1f;
-//                    Log.i( "Test", "run: mTime is "+mTime );
                     mHandler.sendEmptyMessage(MSG_VOICE_CHANGED);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -138,15 +143,13 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                     mDialogManager.dismissDialog();
                     break;
                 case MSG_DIALOG_FORCE:
-                    mDialogManager.forceSend( mTime );
+                    changeState( STATE_FORCE_SEND );
                     break;
                 case MSG_DIALOG_STOP:
+                    isForced = true;
+                    isRecording = false;
                     mDialogManager.dismissDialog();
                     mAudioManager.release();
-                    if (mListener != null) {
-                        mListener.onFinish( mTime, mAudioManager.getCurrentFilePath() );
-                    }
-                    reset();
                     break;
             }
         }
@@ -170,41 +173,64 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
         int y = (int) event.getY();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+//                Log.i( "Test", "ACTION_DOWN Event: isRecording is "+isRecording );
+//                Log.i( "Test", "ACTION_DOWN Event: isForced is "+isForced );
+//                Log.i( "Test", "ACTION_DOWN Event: mCurState is "+mCurState );
+//                Log.i( "Test", "ACTION_DOWN Event: mTime is "+mTime );
                 isRecording = true;
                 changeState(STATE_RECORDING);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (isRecording) {
-                    //根据想x,y的坐标，判断是否想要取消
-                    if (wantToCancel(x, y)) {
-                        changeState(STATE_WANT_TO_CANCEL);
-                    } else {
-                        changeState(STATE_RECORDING);
+//                Log.i( "Test", "ACTION_MOVE Event: isRecording is "+isRecording );
+//                Log.i( "Test", "ACTION_MOVE Event: isForced is "+isForced );
+//                Log.i( "Test", "ACTION_MOVE Event: mCurState is "+mCurState );
+//                Log.i( "Test", "ACTION_MOVE Event: mTime is "+mTime );
+                if(!isForced){
+                    if (isRecording) {
+                        //根据想x,y的坐标，判断是否想要取消
+                        if (wantToCancel(x, y)) {
+                            changeState(STATE_WANT_TO_CANCEL);
+                        } else {
+                            changeState(STATE_RECORDING);
+                        }
+                    }
+                } else{
+                    count++;
+                    if(count == 1){
+                        if (mListener != null) {
+                            mListener.onFinish( mTime, mAudioManager.getCurrentFilePath() );
+                        }
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                //如果longclick 没触发
+//                Log.i( "Test", "ACTION_UP Event: isRecording is "+isRecording );
+//                Log.i( "Test", "ACTION_UP Event: isForced is "+isForced );
+//                Log.i( "Test", "ACTION_UP Event: mCurState is "+mCurState );
+//                Log.i( "Test", "ACTION_UP Event: mTime is "+mTime );
+                //如果onLongClick 没触发
                 if (!mReady) {
                     reset();
                     return super.onTouchEvent(event);
                 }
-                //触发了onlongclick 没准备好，但是已经prepared 已经start
+                //触发了onLongClick 没准备好，但是已经prepared 已经start
                 //所以消除文件夹
-                if(!isRecording||mTime<0.6f){
+                if(!isForced && (!isRecording || mTime<0.6f)){
                     mDialogManager.tooShort();
                     mAudioManager.cancel();
                     mHandler.sendEmptyMessageDelayed(MSG_DIALOG_DISMISS, 1300);
-                }else if(mCurState==STATE_RECORDING){//正常录制结束
+                }else if(isRecording && !isForced && mCurState==STATE_RECORDING){//正常录制结束
                     mDialogManager.dismissDialog();
                     mAudioManager.release();
                     if (mListener != null) {
                         mListener.onFinish(mTime,mAudioManager.getCurrentFilePath());
                     }
-                } else if (mCurState == STATE_WANT_TO_CANCEL) {
+                } else if (isRecording && !isForced && mCurState == STATE_WANT_TO_CANCEL) {
                     mDialogManager.dismissDialog();
                     mAudioManager.cancel();
-                    //cancel
+                }else if(isForced){ //30秒之后强制发送
+                    mDialogManager.dismissDialog();
+                    mAudioManager.release();
                 }
                 reset();
                 break;
@@ -216,6 +242,7 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
      * 恢复状态 标志位
      */
     private void reset() {
+        isForced = false;
         isRecording = false;
         mReady = false;
         changeState(STATE_NORMAL);
@@ -257,6 +284,9 @@ public class AudioRecorderButton extends android.support.v7.widget.AppCompatButt
                     setBackgroundResource(R.drawable.btn_recording);
                     setText(R.string.str_recorder_want_cancel);
                     mDialogManager.wantToCancel();
+                    break;
+                case STATE_FORCE_SEND:
+                    mDialogManager.forceSend( mTime );
                     break;
             }
         }

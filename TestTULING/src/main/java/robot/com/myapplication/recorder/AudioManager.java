@@ -1,6 +1,7 @@
 package robot.com.myapplication.recorder;
 
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.io.IOException;
  */
 
 public class AudioManager {
-
     private MediaRecorder mMediaRecorder;
     private String mDir;
     private String mCurrentFilePath;
@@ -47,7 +47,6 @@ public class AudioManager {
         return mInstance;
     }
 
-
     /**
      * 准备
      */
@@ -58,7 +57,6 @@ public class AudioManager {
             if (!dir.exists()) {
                 dir.mkdir();
             }
-//            String fileName = generateFileName();
 
             FileNameUtils.setFileName();
             String fileName = FileNameUtils.getFileName();
@@ -88,20 +86,13 @@ public class AudioManager {
         }
     }
 
-    //    生成UUID唯一标示符
-    //    算法的核心思想是结合机器的网卡、当地时间、一个随即数来生成GUID
-    //    .amr音频文件
-//    private String generateFileName() {
-//        return UUID.randomUUID().toString()+".amr";
-//    }
-
     public int getVoiceLevel(int maxLevel) {
         if (isPrepared) {
             //获得最大的振幅getMaxAmplitude() 1-32767
             try {
                 return maxLevel * mMediaRecorder.getMaxAmplitude()/32768+1;
             } catch (Exception e) {
-
+                return -1;
             }
         }
         return 1;
@@ -120,6 +111,7 @@ public class AudioManager {
         if(mCurrentFilePath!=null) {
             File file = new File(mCurrentFilePath);
             file.delete();
+            Log.i( "Test", "cancel: file delete" );
             mCurrentFilePath = null;
         }
     }

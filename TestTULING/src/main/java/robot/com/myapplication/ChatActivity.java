@@ -52,7 +52,7 @@ import robot.com.myapplication.recorder.MediaManager;
 import robot.com.myapplication.tengxunyun.NTest;
 import robot.com.myapplication.tengxunyun.PostObj;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
     private RePublishClient rePublishClient = new RePublishClient();
 
     private String fromWho = "HZH";
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int TAKE_PHOTO = 1;
     public static final int CHOOSE_PHOTO = 2;
 
-    private final int TYPE_RECORDER = 1;
-    private final int TYPE_PHOTO = 2;
+    private static final int TYPE_RECORDER_MESSAGE = 1;
+    private static final int TYPE_PHOTO_MESSAGE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 Log.i( TAG, "==============The client begin to start ...." );
-                SubscriptClient client = new SubscriptClient( MainActivity.this );
+                SubscriptClient client = new SubscriptClient( ChatActivity.this );
                 client.start();
                 Log.i( TAG, "==============The client is running...." );
             }
@@ -139,13 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
-                    Log.i( TAG, "MainActivity message is:" + message );
+                    Log.i( TAG, "ChatActivity message is:" + message );
                     ListData listData;
                     Gson gson = new Gson();
                     listData = gson.fromJson( message, ListData.class );
                     lists.add( listData );
                     adapter.notifyDataSetChanged();
                     lv.setAdapter( adapter );
+                    lv.setSelection( adapter.getCount()-1 );
                 }
             } );
         }
@@ -195,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAudioRecorderButton.setAudioFinishRecorderListener( new AudioRecorderButton.AudioFinishRecorderListener() {
             @Override
             public void onFinish(float seconds, String filePath) {
+                Log.i( TAG, "onFinish: seconds is "+seconds );
+                Log.i( TAG, "onFinish: filePath is "+filePath );
                 if (!showFaceFlag){//将表情栏隐藏
                     mPageGridView.setVisibility(View.GONE);
                     showFaceFlag = true;
@@ -205,16 +208,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //更新adapter
                 adapter.notifyDataSetChanged();
                 lv.setAdapter( adapter );
+                lv.setSelection( adapter.getCount()-1 );
                 //测试网络状况
-                if(NTest.getConnectedType( MainActivity.this ) == 1){
+                if(NTest.getConnectedType( ChatActivity.this ) == 1){
                     PostObj postAmr = new PostObj();
                     AppStr appStr = (AppStr)getApplication();
                     appStr.setIsCompleted( false );
                     Log.i( TAG, "onFinish: 即将上传amr文件" );
-                    postAmr.PostObject( MainActivity.this,filePath,ListData.SEND,TYPE_RECORDER );
+                    postAmr.PostObject( ChatActivity.this,filePath,ListData.SEND,TYPE_RECORDER_MESSAGE );
                     sendAmr(appStr,postAmr,recorderList);
                 }else{
-                    Toast.makeText( MainActivity.this, "网络连接不可用，请稍后重试！", Toast.LENGTH_SHORT ).show();
+                    Toast.makeText( ChatActivity.this, "网络连接不可用，请稍后重试！", Toast.LENGTH_SHORT ).show();
                 }
             }
         } );
@@ -284,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } ).start();
             } else{
+                Toast.makeText( this, "消息发送失败！", Toast.LENGTH_SHORT ).show();
                 Log.i( TAG, "onFinish: 语音上传失败！" );
             }
         }else{
@@ -302,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setListViewAdapter() {
         adapter = new TextAdapter(this,lists );
         lv.setAdapter( adapter );
+        lv.setSelection( adapter.getCount()-1 );
         lv.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -323,27 +329,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     AnimationDrawable animation = null;
                     AppStr appStr = (AppStr)getApplicationContext();
                     if(finalData.getFlag() == ListData.SEND){
+                        //检测文件
+                        if(lists.get( position ).getAmrFilePath() == null){
+                            Toast.makeText( ChatActivity.this, "录音文件地址为空，无法播放！", Toast.LENGTH_SHORT ).show();
+                            return;
+                        }
+
+                        if(!NTest.fileIsExists( lists.get( position ).getAmrFilePath() )){
+                            Toast.makeText( ChatActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
+                            return;
+                        }
                         mAnimView_right.setBackgroundResource( R.drawable.play_anim_right );
                         animation = (AnimationDrawable) mAnimView_right.getBackground();
                         appStr.setDownLoad( true );
                     }else{
                         if(lists.get( position ).getAmrFilePath() == null){
                             //判断网络状态，要进行网络加载工作
-                            if(NTest.getConnectedType( MainActivity.this ) == 1){
+                            if(NTest.getConnectedType( ChatActivity.this ) == 1){
                                 appStr.setIsCompleted( false );
                                 PostObj downLoad  = new PostObj();
                                 Log.i( TAG, "onItemClick: 即将下载录音文件" );
-                                downLoad.PostObject( MainActivity.this,finalData.getFilePath(),ListData.RECEIVE,TYPE_RECORDER );
+                                downLoad.PostObject( ChatActivity.this,finalData.getFilePath(),ListData.RECEIVE,TYPE_RECORDER_MESSAGE );
                                 appStr.setDownLoad( false );
                                 downLoadRecorder(appStr,downLoad,position);
 //                                mAnimView_left.setBackgroundResource( R.drawable.play_anim_left );
 //                                animation = (AnimationDrawable) mAnimView_left.getBackground();
                             }else {
-                                Toast.makeText( MainActivity.this, "亲，当前网络断开了哦！无法播放", Toast.LENGTH_SHORT ).show();
+                                Toast.makeText( ChatActivity.this, "亲，当前网络断开了哦！无法播放", Toast.LENGTH_SHORT ).show();
                             }
                         }else{
-                            if(NTest.fileIsExists( lists.get( position ).getAmrFilePath() ) == false){
-                                Toast.makeText( MainActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
+                            if(!NTest.fileIsExists( lists.get( position ).getAmrFilePath() )){
+                                Toast.makeText( ChatActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
                                 return;
                             }
 //                            mAnimView_left.setBackgroundResource( R.drawable.play_anim_left );
@@ -375,16 +391,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void playRecorder(final AppStr appStr, final ListData finalData, final int position, final View mAnimView_left, final View mAnimView_right) {
         if(appStr.isDownLoad() == true){
-            //检测文件
-            if(lists.get( position ).getAmrFilePath() == null){
-                Toast.makeText( MainActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
-                return;
-            }
-
-            if(NTest.fileIsExists( lists.get( position ).getAmrFilePath() ) == false){
-                Toast.makeText( MainActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
-                return;
-            }
+//            //检测文件
+//            if(lists.get( position ).getAmrFilePath() == null){
+//                Toast.makeText( ChatActivity.this, "录音文件地址为空，无法播放！", Toast.LENGTH_SHORT ).show();
+//                return;
+//            }
+//
+//            if(NTest.fileIsExists( lists.get( position ).getAmrFilePath() ) == false){
+//                Toast.makeText( ChatActivity.this, "录音文件不存在，无法播放！", Toast.LENGTH_SHORT ).show();
+//                return;
+//            }
 
             //播放音频  完成后改回原来的background
             MediaManager.playSound( lists.get( position ).getAmrFilePath(), new MediaPlayer.OnCompletionListener() {
@@ -422,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 lists.get( position ).setAmrFilePath( amrPath );
                 appStr.setDownLoad( true );
             }else {
-                Toast.makeText( MainActivity.this, "下载语音文件失败！", Toast.LENGTH_SHORT ).show();
+                Toast.makeText( ChatActivity.this, "读取消息失败！", Toast.LENGTH_SHORT ).show();
                 appStr.setDownLoad( true );
             }
         }else {
@@ -586,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                         String path = cursor.getString(columnIndex);  //获取照片路径
                         cursor.close();
-                        ImageUtil.setTempFile( MainActivity.this );
+                        ImageUtil.setTempFile( ChatActivity.this );
                         showAndPostPic( path );
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -605,12 +621,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lists.add(data);//将数据内容加入lists中
         adapter.notifyDataSetChanged();
         lv.setAdapter(adapter);
-        if(NTest.getConnectedType( MainActivity.this ) == 1){
+        if(NTest.getConnectedType( ChatActivity.this ) == 1){
             //上传图片
             AppStr appStr = (AppStr)getApplication();//全局变量
             appStr.setIsCompleted(false);
             PostObj postPic = new PostObj();
-            postPic.PostObject( MainActivity.this,path ,ListData.SEND,TYPE_PHOTO);
+            postPic.PostObject( ChatActivity.this,path ,ListData.SEND,TYPE_PHOTO_MESSAGE);
             publishPic(appStr,postPic,data);//检查图片是否上传成功
         }else {
             Toast.makeText( this, "网络连接不可用，请稍后重试！", Toast.LENGTH_SHORT ).show();
@@ -636,7 +652,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }).start();
             }else{
-                Toast.makeText(MainActivity.this, "上传图片失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ChatActivity.this, "发送消息失败！", Toast.LENGTH_SHORT).show();
             }
         }else{
             new Thread(new Runnable() {
@@ -661,7 +677,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void takePhoto() {
         Intent photo = new Intent( MediaStore.ACTION_IMAGE_CAPTURE);
-        imageUri = ImageUtil.getImageUri(MainActivity.this);
+        imageUri = ImageUtil.getImageUri(ChatActivity.this);
         photo.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); //putExtra()指定图片的输出地址，填入之前获得的Uri对象
         startActivityForResult(photo, TAKE_PHOTO);
     }
@@ -749,11 +765,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final String jsonStr = gson.toJson( listData, ListData.class );
         Log.i( TAG, "myRepublish: jsonStr is " + jsonStr );
 
-        if (lists.size() > 30) {
-            for (int i = 0; i < lists.size(); i++) {
-                lists.remove( i );
-            }
-        }
+//        if (lists.size() > 30) {
+//            for (int i = 0; i < lists.size(); i++) {
+//                lists.remove( i );
+//            }
+//        }
 
         new Thread( new Runnable() {
             @Override

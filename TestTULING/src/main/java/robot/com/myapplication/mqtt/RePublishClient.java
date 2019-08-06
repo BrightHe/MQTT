@@ -57,6 +57,7 @@ public class RePublishClient {
         options.setCleanSession(false);
         options.setUserName(userName);
         options.setPassword(passWord.toCharArray());
+        options.isAutomaticReconnect(); //自动重连
         // 设置超时时间
         options.setConnectionTimeout(10);
         // 设置会话心跳时间
@@ -78,7 +79,6 @@ public class RePublishClient {
                 public void messageArrived(String topic, MqttMessage arg1)
                         throws Exception {
                     Log.i(TAG, "messageArrived----------");
-
                 }
             });
 

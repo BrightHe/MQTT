@@ -36,9 +36,9 @@ public class PushCallback implements MqttCallback {
 
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         // subscribe后得到的消息会执行到这里面
-        Log.i( TAG, "messageArrived: 接收消息主题:" +topic);
-        Log.i( TAG, "messageArrived: 接收消息Qos:" +message.getQos());
-        Log.i( TAG, "messageArrived: 接收消息内容:"+new String( message.getPayload() ) );
+//        Log.i( TAG, "messageArrived: 接收消息主题:" +topic);
+//        Log.i( TAG, "messageArrived: 接收消息Qos:" +message.getQos());
+//        Log.i( TAG, "messageArrived: 接收消息内容:"+new String( message.getPayload() ) );
         Log.i(TAG,"pushCallBack messages is :"+ message.toString());
 
         Gson gson = new Gson();
@@ -49,7 +49,6 @@ public class PushCallback implements MqttCallback {
             listData.setFlag( ListData.RECEIVE );
             listData.setAmrFilePath( null );
             String re_message = gson.toJson( listData,ListData.class );
-//            Log.i( TAG, "messageArrived: re_message is "+re_message );
             intent.putExtra("message",re_message);
         }
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(ctx);

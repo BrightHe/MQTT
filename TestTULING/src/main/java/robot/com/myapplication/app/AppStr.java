@@ -12,6 +12,11 @@ public class AppStr extends Application {
     private boolean isCompleted;
     private boolean isDownLoad;
 
+    public static String getClientId(String clientId){
+        String client = clientId+"@@@"+ System.currentTimeMillis();
+        return client;
+    }
+
     public boolean IsCompleted() {
         return isCompleted;
     }
