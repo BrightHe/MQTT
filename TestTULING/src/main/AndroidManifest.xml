@@ -10,11 +10,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
-        android:networkSecurityConfig="@xml/network_security_config"
         android:name=".app.AppStr"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -39,6 +39,16 @@
         <activity android:name=".ChatActivity">
         </activity>
         <activity android:name=".login.RegisterInActivity">
+        </activity>
+        <activity android:name=".pal.PalActivity">
+        </activity>
+        <activity android:name=".pal.RecActivity">
+        </activity>
+        <activity android:name=".pal.AddActivity">
+        </activity>
+        <activity android:name=".pal.FriendDataActivity">
+        </activity>
+        <activity android:name=".pal.NewFriendDetailsActivity">
         </activity>
     </application>
 

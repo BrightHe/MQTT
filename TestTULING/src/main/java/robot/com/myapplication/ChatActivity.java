@@ -34,6 +34,9 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.wihaohao.PageGridView;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,10 +56,10 @@ import robot.com.myapplication.tengxunyun.NTest;
 import robot.com.myapplication.tengxunyun.PostObj;
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
-    private RePublishClient rePublishClient = new RePublishClient();
-
+    private RePublishClient rePublishClient;
+    private MqttMessage message;
     private String fromWho = "HZH";
-    private String toUser = "HZH";
+    private String toUser = "LT";
     private int infType = ListData.TEXT;
 
     private List<ListData> lists; //消息列表
@@ -85,7 +88,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private View mAnimView_left,mAnimView_right;
 
     private String TAG = "Test";
-    private String message; //接收的消息
 
     private Uri imageUri;
     public static final int TAKE_PHOTO = 1;
@@ -105,14 +107,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         initView(); //初始化界面
         setDefaultState();
-        rePublishClient.connectMQTTServer(); // 连接MQTT服务
+
+        createClient();
 
         //订阅
         new Thread( new Runnable() {
             @Override
             public void run() {
                 Log.i( TAG, "==============The client begin to start ...." );
-                SubscriptClient client = new SubscriptClient( ChatActivity.this );
+                SubscriptClient client = new SubscriptClient( ChatActivity.this,
+                        Constants.MQTT_LIGHT_SUBSCRIPT_CHAT_TOPIC,
+                        AppStr.getClientId( Constants.MQTT_LIGHT_SUBSCRIPT_AGREE_clientid ),
+                        Constants.MQTT_LIGHT_SUBSCRIPT_HOST );
                 client.start();
                 Log.i( TAG, "==============The client is running...." );
             }
@@ -130,23 +136,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * 创建连接
+     */
+    private void createClient() {
+        try {
+            rePublishClient = new RePublishClient(ChatActivity.this, Constants.MQTT_LIGHT_PUBLISH_HOST,
+                    Constants.MQTT_LIGHT_SUBSCRIPT_CHAT_TOPIC,
+                    AppStr.getClientId( Constants.MQTT_LIGHT_PUBLISH_AGREE_clientid ),
+                    Constants.MQTT_LIGHT_PUBLISH_userName,
+                    Constants.MQTT_LIGHT_PUBLISH_passWord);//创建发布类对象
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+        message = new MqttMessage();
+        message.setQos(2); // 可以有三种值（0,1,2）
+        message.setRetained(false);//
+        Log.i(TAG, message.isRetained() + "------retained状态");
+    }
+
+    /**
      * 广播接收器
      */
     private class LocalReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            message = intent.getStringExtra( "message" );
+            final String message = intent.getStringExtra( "chatMessage" );
             runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
                     Log.i( TAG, "ChatActivity message is:" + message );
-                    ListData listData;
-                    Gson gson = new Gson();
-                    listData = gson.fromJson( message, ListData.class );
-                    lists.add( listData );
-                    adapter.notifyDataSetChanged();
-                    lv.setAdapter( adapter );
-                    lv.setSelection( adapter.getCount()-1 );
+                    if(message != null){
+                        ListData listData;
+                        Gson gson = new Gson();
+                        listData = gson.fromJson( message, ListData.class );
+                        lists.add( listData );
+                        adapter.notifyDataSetChanged();
+                        lv.setAdapter( adapter );
+                        lv.setSelection( adapter.getCount()-1 );
+                    }
                 }
             } );
         }
@@ -202,7 +229,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     mPageGridView.setVisibility(View.GONE);
                     showFaceFlag = true;
                 }
-                ListData recorderList = new ListData( seconds,null,fromWho, toUser, ListData.SEND, getTime(), ListData.RECORDER );
+                ListData recorderList = new ListData( seconds,null,fromWho, toUser, ListData.SEND, getTime(), ListData.RECORDER,Constants.CHAT_TYPE );
                 recorderList.setAmrFilePath( filePath );
                 lists.add( recorderList );
                 //更新adapter
@@ -281,10 +308,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 Gson gson = new Gson();
                 final String jsonStr = gson.toJson( recorderList,ListData.class );
                 Log.i( TAG, "onFinish: jsonStr is "+jsonStr );
+                message.setPayload( jsonStr.getBytes() );
                 new Thread( new Runnable() {
                     @Override
                     public void run() {
-                        rePublishClient.myRepublish( jsonStr );
+                        try {
+                            rePublishClient.publish(rePublishClient.getTopic(), message );
+                        } catch (MqttException e) {
+                            e.printStackTrace();
+                            Log.i( TAG, "run: 发送语音消息失败！" );
+                        }
                     }
                 } ).start();
             } else{
@@ -616,7 +649,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * 显示图片
      */
     private void showAndPostPic(String path) {
-        ListData data = new ListData( fromWho,toUser, ListData.SEND,getTime(),infType );
+        ListData data = new ListData( fromWho,toUser, ListData.SEND,getTime(),infType ,Constants.CHAT_TYPE);
         data.setLocalPicPath( path );
         lists.add(data);//将数据内容加入lists中
         adapter.notifyDataSetChanged();
@@ -645,10 +678,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 data.setPicPath( picPath );
                 final String jsonStr = gson.toJson(data, ListData.class);
                 Log.i( TAG, "myRepublish: jsonStr is "+jsonStr );
+                message.setPayload( jsonStr.getBytes() );
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        rePublishClient.myRepublish(jsonStr);
+                        try {
+                            rePublishClient.publish(rePublishClient.getTopic(), message );
+                        } catch (MqttException e) {
+                            e.printStackTrace();
+                            Log.i( TAG, "run: 发送失败" );
+                        }
                     }
                 }).start();
             }else{
@@ -749,7 +788,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //        String time = sdf.format(new Date());
         ListData listData;
-        listData = new ListData( fromWho, toUser, content_str, ListData.SEND, getTime(), infType );
+        listData = new ListData( fromWho, toUser, content_str, ListData.SEND, getTime(), infType ,Constants.CHAT_TYPE);
         lists.add( listData );
 
         Log.i( TAG, "----------content_str=" + content_str );
@@ -760,21 +799,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         } );
 
-        Log.i( TAG, "----------content_str=" + content_str );
         Gson gson = new Gson();
         final String jsonStr = gson.toJson( listData, ListData.class );
         Log.i( TAG, "myRepublish: jsonStr is " + jsonStr );
-
-//        if (lists.size() > 30) {
-//            for (int i = 0; i < lists.size(); i++) {
-//                lists.remove( i );
-//            }
-//        }
-
+        //设置负载，即消息内容
+        message.setPayload(jsonStr.getBytes());
         new Thread( new Runnable() {
             @Override
             public void run() {
-                rePublishClient.myRepublish( jsonStr );
+                try {
+                    rePublishClient.publish(rePublishClient.getTopic(), message );
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "run: " + "发布失败");
+                }
             }
         } ).start();
     }

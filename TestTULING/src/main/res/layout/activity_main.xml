@@ -6,6 +6,8 @@
               android:orientation="vertical"
               android:background="#efefef">
 
+
+
     <!-- transcriptMode 自动向下滚动    alwaysScroll一直向下滚动状态;   divider设置间隔线效果 ;   listSelector设置没有滑动效果 -->
 
     <ListView

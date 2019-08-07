@@ -20,6 +20,8 @@ public class ListData extends Recorder{
 	private String amrFilePath;
 	private String localPicPath;
 
+	private int request_type;//聊天消息
+
 	/**
 	 * 初始化
 	 */
@@ -28,37 +30,48 @@ public class ListData extends Recorder{
 	/**
 	 * 语音发送
 	 */
-	public ListData(float time,String filePath,String fromWho, String toUser, int flag, String publishTime, int infType) {
+	public ListData(float time,String filePath,String fromWho, String toUser, int flag, String publishTime, int infType,int request_type) {
 		super(time,filePath);
 		this.fromWho = fromWho;
 		this.toUser = toUser;
 		this.flag = flag;
 		this.publishTime = publishTime;
 		this.infType = infType;
+		this.request_type = request_type;
 	}
 
 	/**
 	 * 图片发送
 	 */
-	public ListData(String fromWho, String toUser, int flag, String publishTime,int infType) {
+	public ListData(String fromWho, String toUser, int flag, String publishTime,int infType,int request_type) {
 		this.fromWho = fromWho;
 		this.toUser = toUser;
 		this.flag = flag;
 		this.publishTime = publishTime;
 		this.infType = infType;
+		this.request_type = request_type;
 	}
 
 
 	/**
 	 * 文本发送
 	 */
-	public ListData(String fromWho, String toUser, String text_content, int flag, String publishTime, int infType) {
+	public ListData(String fromWho, String toUser, String text_content, int flag, String publishTime, int infType,int request_type) {
 		this.fromWho = fromWho;
 		this.toUser = toUser;
 		this.text_content = text_content;
 		this.flag = flag;
 		this.publishTime = publishTime;
 		this.infType = infType;
+		this.request_type = request_type;
+	}
+
+	public int getRequest_type() {
+		return request_type;
+	}
+
+	public void setRequest_type(int request_type) {
+		this.request_type = request_type;
 	}
 
 	public String getLocalPicPath() {
@@ -143,6 +156,9 @@ public class ListData extends Recorder{
 				", publishTime='" + publishTime + '\'' +
 				", infType=" + infType +
 				", picPath='" + picPath + '\'' +
+				", amrFilePath='" + amrFilePath + '\'' +
+				", localPicPath='" + localPicPath + '\'' +
+				", request_type=" + request_type +
 				'}';
 	}
 }

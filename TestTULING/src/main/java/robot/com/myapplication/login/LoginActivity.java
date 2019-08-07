@@ -21,9 +21,9 @@ import java.io.IOException;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-import robot.com.myapplication.ChatActivity;
 import robot.com.myapplication.R;
 import robot.com.myapplication.dialog.DialogUIUtils;
+import robot.com.myapplication.pal.PalActivity;
 
 import static robot.com.myapplication.dialog.DialogUIUtils.dismiss;
 
@@ -50,8 +50,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         boolean login = User.getBoolean( "login", false );
         Log.i( TAG, "login is "+login );
         if(login){
-            Intent intent= new Intent( LoginActivity.this, ChatActivity.class );
+            Intent intent= new Intent( LoginActivity.this, PalActivity.class );
             startActivity( intent );
+            finish();
         }else{
             initView();
         }
@@ -176,7 +177,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             public void run() {
                                 dismiss( progressDialog );
                                 Toast.makeText( LoginActivity.this, "登录成功!", Toast.LENGTH_SHORT ).show();
-                                Intent intent = new Intent( LoginActivity.this, ChatActivity.class );
+                                Intent intent = new Intent( LoginActivity.this, PalActivity.class );
                                 startActivity( intent );
                                 finish();
                             }

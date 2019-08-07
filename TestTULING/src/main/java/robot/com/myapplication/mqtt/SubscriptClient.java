@@ -1,47 +1,48 @@
 package robot.com.myapplication.mqtt;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Created by Administrator on 2019/7/25.
  */
 
 public class SubscriptClient {
-    public static final String HOST = "tcp://47.105.185.251:61613";
-    public static final String TOPIC = "HZH/HZH";
-    String clientid = "13864952639@163.com";
+    private String host;
+    private String topic;
+    private String clientid;
     private MqttClient client;
     private MqttConnectOptions options;
-    private String userName = "admin";
-    private String passWord = "password";
-
-    private ScheduledExecutorService scheduler;
+    private static final String TAG = "SubscriptClient";
 
     private Context ctx;
 
-    public SubscriptClient(Context ctx) {
+    public SubscriptClient(Context ctx,String topic,String clientid,String host) {
         this.ctx = ctx;
+        this.topic = topic;
+        Log.i(TAG, "SubscriptClient:topic is  "+topic);
+        this.clientid = clientid;
+        Log.i( TAG, "SubscriptClient: clientId is "+clientid );
+        this.host = host;
     }
-
 
     public void start() {
         try {
             // host为主机名，clientid即连接MQTT的客户端ID，一般以唯一标识符表示，MemoryPersistence设置clientid的保存形式，默认为以内存保存
-            client = new MqttClient(HOST, clientid, new MemoryPersistence());
+            client = new MqttClient(host, clientid, new MemoryPersistence());
             // MQTT的连接设置
             options = new MqttConnectOptions();
             // 设置是否清空session,这里如果设置为false表示服务器会保留客户端的连接记录，这里设置为true表示每次连接到服务器都以新的身份连接
             options.setCleanSession(true);
             // 设置连接的用户名
-            options.setUserName(userName);
+            options.setUserName(Constants.MQTT_LIGHT_SUBSCRIPT_userName);
             // 设置连接的密码
-            options.setPassword(passWord.toCharArray());
+            options.setPassword(Constants.MQTT_LIGHT_SUBSCRIPT_passWord.toCharArray());
             // 设置超时时间 单位为秒
             options.setConnectionTimeout(10);
             // 设置会话心跳时间 单位为秒 服务器会每隔1.5*20秒的时间向客户端发送个消息判断客户端是否在线，但这个方法并没有重连的机制
@@ -55,11 +56,13 @@ public class SubscriptClient {
             client.connect(options);
             //订阅消息
             int[] Qos  = {2};
-            String[] topic1 = {TOPIC};
+            String[] topic1 = {topic};
             client.subscribe(topic1, Qos);
 
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText( ctx, "订阅连接出错！", Toast.LENGTH_SHORT ).show();
+            Log.i( TAG, "start: 订阅连接出错！" );
         }
     }
 }
