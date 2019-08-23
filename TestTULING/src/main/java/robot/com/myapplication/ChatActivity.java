@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -49,24 +50,26 @@ import robot.com.myapplication.adapter.MyIconModel;
 import robot.com.myapplication.app.AppStr;
 import robot.com.myapplication.mqtt.Constants;
 import robot.com.myapplication.mqtt.RePublishClient;
-import robot.com.myapplication.mqtt.SubscriptClient;
+import robot.com.myapplication.pal.FriendsData;
 import robot.com.myapplication.recorder.AudioRecorderButton;
 import robot.com.myapplication.recorder.MediaManager;
 import robot.com.myapplication.tengxunyun.NTest;
 import robot.com.myapplication.tengxunyun.PostObj;
+import robot.com.myapplication.thread.MyThread;
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
     private RePublishClient rePublishClient;
     private MqttMessage message;
-    private String fromWho = "HZH";
-    private String toUser = "LT";
+    private String fromWho = FriendsData.UserInfo.getUserName();
+    private String toUser;
     private int infType = ListData.TEXT;
 
     private List<ListData> lists; //消息列表
     private ListView lv;    //列表控件
     private EditText et_sendText; //消息输入框
     private Button  btn_send;  //发送
-    private ImageView bt_voice,bt_keyboard,bt_emoji,pop_plus,camera_img,pictures_img;
+    private ImageView bt_voice,bt_keyboard,bt_emoji,pop_plus,camera_img,pictures_img,image_back;
+    private TextView title_back,pal_name;
     private LinearLayout others;
     private String content_str;
     private TextAdapter adapter;
@@ -87,7 +90,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private View mAnimView_left,mAnimView_right;
 
-    private String TAG = "Test";
+    private String TAG = "ChatActivity";
 
     private Uri imageUri;
     public static final int TAKE_PHOTO = 1;
@@ -95,6 +98,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int TYPE_RECORDER_MESSAGE = 1;
     private static final int TYPE_PHOTO_MESSAGE = 2;
+
+    MyThread myThread; //线程对象
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,24 +110,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
+        Intent intent = getIntent();
+        toUser = intent.getStringExtra( "pal_name" );
+
         initView(); //初始化界面
         setDefaultState();
 
         createClient();
 
-        //订阅
-        new Thread( new Runnable() {
-            @Override
-            public void run() {
-                Log.i( TAG, "==============The client begin to start ...." );
-                SubscriptClient client = new SubscriptClient( ChatActivity.this,
-                        Constants.MQTT_LIGHT_SUBSCRIPT_CHAT_TOPIC,
-                        AppStr.getClientId( Constants.MQTT_LIGHT_SUBSCRIPT_AGREE_clientid ),
-                        Constants.MQTT_LIGHT_SUBSCRIPT_HOST );
-                client.start();
-                Log.i( TAG, "==============The client is running...." );
-            }
-        } ).start();
+        myThread = new MyThread( ChatActivity.this );//创建对象
+        Thread thread = new Thread( myThread);//创建线程对象
+        //        thread.setDaemon( true ); //设为后台进程
+        thread.start();
 
         intentFilter = new IntentFilter();
         intentFilter.addAction( Constants.MY_MQTT_BROADCAST_NAME );
@@ -183,6 +182,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      *初始化界面
      */
     private void initView() {
+        image_back = (ImageView)findViewById( R.id.main_image_back );
+        image_back.setOnClickListener( this );
+        title_back = (TextView)findViewById( R.id.title_back );
+        title_back.setOnClickListener( this );
+        pal_name = (TextView)findViewById( R.id.pal_name );
+        pal_name.setText( toUser );
         lists = new ArrayList<ListData>();
         lv = (ListView) findViewById( R.id.lv );
         bt_voice = (ImageView) findViewById( R.id.bt_voice );
@@ -527,6 +532,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.main_image_back:
+                finish();
+                break;
+            case R.id.title_back:
+                finish();
+                break;
             case R.id.bt_voice:
                 if (!showFaceFlag){//将表情栏隐藏
                     mPageGridView.setVisibility(View.GONE);

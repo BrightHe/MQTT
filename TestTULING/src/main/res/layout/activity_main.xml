@@ -6,7 +6,44 @@
               android:orientation="vertical"
               android:background="#efefef">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/colorPrimary">
 
+        <ImageView
+            android:id="@+id/main_image_back"
+            android:clickable="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/arrow_back"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:id="@+id/title_back"
+            android:layout_toRightOf="@+id/main_image_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:text="消息"
+            android:textSize="18sp"
+            android:layout_centerVertical="true"
+            android:textColor="#fff"
+            />
+
+        <TextView
+            android:id="@+id/pal_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:text="HZH"
+            android:textSize="18sp"
+            android:layout_centerInParent="true"
+            android:textColor="#fff"
+            />
+
+    </RelativeLayout>
 
     <!-- transcriptMode 自动向下滚动    alwaysScroll一直向下滚动状态;   divider设置间隔线效果 ;   listSelector设置没有滑动效果 -->
 

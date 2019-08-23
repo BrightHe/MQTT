@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="新的朋友"
+            android:text="好友申请"
             android:textSize="20sp"
             android:textColor="#fff"/>
 

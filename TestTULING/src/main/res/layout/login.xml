@@ -35,7 +35,7 @@
             android:layout_height="40dp"
             android:layout_marginLeft="25dp"
             android:layout_centerVertical="true"
-            android:background="@drawable/user"/>
+            android:background="@drawable/user_login"/>
 
         <!--账号-->
         <EditText

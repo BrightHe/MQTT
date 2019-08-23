@@ -44,10 +44,10 @@ public class FriendsData {
 
     //初始化推荐好友
     static {
-        recomFriendList.add(new NewFriend("HFH", "11", "11", "11", R.drawable.face_0));
-        recomFriendList.add(new NewFriend("LJH", "22", "22", "22", R.drawable.face_1));
-        recomFriendList.add(new NewFriend("LT", "33", "33", "33", R.drawable.face_2));
-        recomFriendList.add(new NewFriend("44", "44", "44", "44", R.drawable.face_3));
-        recomFriendList.add(new NewFriend("55", "55", "55", "55", R.drawable.face_4));
+        recomFriendList.add(new NewFriend("HFH", "11", "11", "11", R.drawable.sign_pic));
+        recomFriendList.add(new NewFriend("LJH", "22", "22", "22", R.drawable.person1));
+        recomFriendList.add(new NewFriend("LT", "33", "33", "33", R.drawable.person2));
+        recomFriendList.add(new NewFriend("44", "44", "44", "44", R.drawable.person3));
+        recomFriendList.add(new NewFriend("55", "55", "55", "55", R.drawable.person4));
     }
 }

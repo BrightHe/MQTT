@@ -31,6 +31,7 @@ public class Constants {
     public static final String MQTT_LIGHT_SUBSCRIPT_APPLY_TOPIC = "APPLY_ME";        //订阅好友申请的主题
     public static final String MQTT_LIGHT_SUBSCRIPT_APPLY_clientid = "MQTT_LIGHT_SUBSCRIPT_APPLY_ME";//订阅申请回复的ID
     public static final String MQTT_LIGHT_SUBSCRIPT_AGREE_clientid = "MQTT_LIGHT_SUBSCRIPT_AGREE_OR_REFUSE";//订阅好友申请的ID
+    public static final String MQTT_LIGHT_SUBSCRIPT_CHAT_clientid = "MQTT_LIGHT_SUBSCRIPT_CHAT";//订阅好友申请的ID
     public static final String  MQTT_LIGHT_SUBSCRIPT_userName = "admin";
     public static final String  MQTT_LIGHT_SUBSCRIPT_passWord = "password";
 

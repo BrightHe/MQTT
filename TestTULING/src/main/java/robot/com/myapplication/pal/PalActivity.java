@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +12,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -19,6 +22,8 @@ import java.util.List;
 
 import robot.com.myapplication.R;
 import robot.com.myapplication.app.AppStr;
+import robot.com.myapplication.dialog.MyDialog;
+import robot.com.myapplication.login.LoginActivity;
 import robot.com.myapplication.mqtt.Constants;
 import robot.com.myapplication.mqtt.SubscriptClient;
 
@@ -28,6 +33,9 @@ public class PalActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private static final String TAG = "PalActivity";
     private FriendAdapter friendAdapter;
+    private ImageView setting;
+
+    private boolean login;
 
     //订阅消息
     private IntentFilter intentFilter;
@@ -39,6 +47,11 @@ public class PalActivity extends AppCompatActivity {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_pal );
 
+        SharedPreferences User = getSharedPreferences( "data", Context.MODE_PRIVATE );
+        //如果未找到该值，则使用get方法中传入的默认值false代替
+        login = User.getBoolean( "login", false );
+        Log.i( TAG, "PalActivity: login is "+login );
+
         intentFilter = new IntentFilter();
         intentFilter.addAction( Constants.MY_MQTT_BROADCAST_NAME);
         localReceiver = new LocalReceiver();
@@ -47,25 +60,6 @@ public class PalActivity extends AppCompatActivity {
         localBroadcastManager.registerReceiver(localReceiver,intentFilter);
 
         initView();
-
-        //好友列表
-        rv_new.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(PalActivity.this,AddActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        //推荐好友列表
-        rv_recom.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(PalActivity.this,RecActivity.class);
-                startActivity(intent);
-            }
-        });
-
     }
 
     @Override
@@ -120,13 +114,56 @@ public class PalActivity extends AppCompatActivity {
      *
      */
     private void initView() {
+        setting = (ImageView)findViewById( R.id.setting );
+        setting.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkOut();
+            }
+        } );
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         rv_new = (RelativeLayout) findViewById(R.id.rv_new);
+        //好友列表
+        rv_new.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PalActivity.this,AddActivity.class);
+                startActivity(intent);
+            }
+        });
         rv_recom = (RelativeLayout) findViewById(R.id.rv_recom);
+        //推荐好友列表
+        rv_recom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PalActivity.this,RecActivity.class);
+                startActivity(intent);
+            }
+        });
         friendAdapter = new FriendAdapter(FriendsData.myFriendList);
         mRecyclerView.setAdapter(friendAdapter);
+    }
+
+    private void checkOut() {
+        if(login == true){
+            //弹出一个弹框，询问是否退出
+            MyDialog.show(this, "确定退出登录吗?", new MyDialog.OnConfirmListener() {
+                @Override
+                public void onConfirmClick() {
+                    //这里写点击确认后的逻辑
+                    SharedPreferences.Editor set_sp = getSharedPreferences( "data", Context.MODE_PRIVATE ).edit();
+                    set_sp.putBoolean( "login",false );
+                    set_sp.commit();
+                    Intent intent_back = new Intent( PalActivity.this, LoginActivity.class );
+                    startActivity( intent_back );
+                }
+            });
+        }
+        else{
+            Toast.makeText( this, "您处于未登录状态，无法退出登录！", Toast.LENGTH_SHORT ).show();
+        }
     }
 
     /*

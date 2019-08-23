@@ -36,7 +36,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="用戶名"
-                    android:textSize="20sp" />
+                    android:textSize="17sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -51,8 +51,9 @@
                     android:id="@+id/qianming"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="3"
+                    android:maxLines="2"
                     android:text="签名："
+                    android:textSize="15sp"
                     android:layout_gravity="center_vertical"
                     />
 

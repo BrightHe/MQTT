@@ -35,7 +35,7 @@ public class FriendDataActivity extends AppCompatActivity {
         image_head = (ImageView) findViewById(R.id.image_head);
 
         Intent intent1 = getIntent();
-        NewFriend friend = (NewFriend) intent1.getSerializableExtra("friend_data");
+        final NewFriend friend = (NewFriend) intent1.getSerializableExtra("friend_data");
         username1.setText(friend.getUserName());
         qianming1.setText(friend.getSigature());
         sex1.setText(friend.getSex());
@@ -54,6 +54,7 @@ public class FriendDataActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(FriendDataActivity.this,"进入消息界面", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent( FriendDataActivity.this, ChatActivity.class );
+                intent.putExtra( "pal_name",friend.getUserName() );
                 startActivity( intent );
             }
         });

@@ -12,6 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import robot.com.myapplication.ListData;
+import robot.com.myapplication.pal.FriendsData;
 import robot.com.myapplication.pal.NewFriend;
 
 /**
@@ -50,7 +51,7 @@ public class PushCallback implements MqttCallback {
 //        Log.i( TAG, "PushCallback messageArrived: listData is "+listData.toString() );
         Intent intent = new Intent(Constants.MY_MQTT_BROADCAST_NAME);
         Log.i( TAG, "PushCallback messageArrived: toUser is "+listData.getToUser() );
-        if(listData.getToUser() != null && listData.getToUser().equals( "HZH" )){
+        if(listData.getToUser() != null && listData.getToUser().equals( FriendsData.UserInfo.getUserName() )){
             if(listData.getRequest_type() == Constants.CHAT_TYPE){
                 listData.setFlag( ListData.RECEIVE );
                 listData.setAmrFilePath( null );
